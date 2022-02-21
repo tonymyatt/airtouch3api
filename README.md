@@ -43,6 +43,6 @@ Alternate Object Functions:\
 
 ## Thanks
 With thanks to the following projects which provided inspiration:\
-https://github.com/ozczecho/vzduch-dotek\
-https://github.com/L0rdCha0s/homebridge-airtouch3-airconditioner\
+https://github.com/ozczecho/vzduch-dotek \
+https://github.com/L0rdCha0s/homebridge-airtouch3-airconditioner \
 https://github.com/LonePurpleWolf/airtouch4pyapi
