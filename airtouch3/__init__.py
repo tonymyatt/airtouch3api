@@ -1,1 +1,1 @@
-from airtouch3 import AirTouch3
+from airtouch3.airtouch3 import AirTouch3
