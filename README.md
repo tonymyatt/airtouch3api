@@ -18,9 +18,9 @@ To read status from unit, return true if succesful, otherwise false:\
 `at3.comms_error`\
 `at3.groups`\
 `at3.acUnits`\
-`at3.sensors`
-`at3.UpdateStatus()`
-`at3.PrintStatus()`
+`at3.sensors`\
+`at3.UpdateStatus()`\
+`at3.PrintStatus()`\
 
 ## Group Functions (aka Zones in most other systems)
 `at3.ToggleGroup(group_id)`\
