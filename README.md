@@ -2,22 +2,16 @@
 Api for the monitoring and control of a HVAC unit branded Polyaire Airtouch 3.
 https://www.polyaire.com.au/about-us/news/airtouch-version-3-now-available/
 
-## Usage
+# API Definition
+
+## General Usage
 To initialise:\
 `at3 = AirTouch3("192.168.1.1")`
 
 To read status from unit, return true if succesful, otherwise false:\
 `at3.UpdateStatus();`
 
-print(f"Group[{g.number}]: {g.name}; On: {g.is_on}; Mode is {g.mode}; Percent: {g.open_percent}%; Temp: {g.temperature}degC; Target: {g.temperature_sp}degC")
-        for ac in self.acUnits.values():
-            print(f"AC Unit[{ac.number}]: {ac.name}; On: {ac.is_on}; Error: {ac.has_error}; Mode: {ac.mode}; Brand ID: {ac.brand}; Fan: {ac.fan_speed} Temp: {ac.temperature}degC Target: {ac.temperature_sp}degC")
-        for s in self.sensors.values():
-            print(f"Sensor[{s.name}]: {s.temperature}degC; Low Battery: {s.low_battery}")
-
-The following functions are available:
-
-## General
+## Air Touch Object
 `at3.name`\
 `at3.id`\
 `at3.comms_status`\
@@ -64,6 +58,44 @@ The following functions are available:
 `at3.sensors[sensor_name].temperature`\
 `at3.sensors[sensor_name].low_battery`
 
+## Simple Example
+
+```
+from airtouch3.airtouch3 import AirTouch3, AT3CommsStatus
+
+at3 = AirTouch3('192.168.1.72')
+at3.UpdateStatus()
+if at3.comms_status != AT3CommsStatus.OK:
+    print("Connection failed")
+    exit()
+at3.PrintStatus()
+
+# Toggle a zone on/off
+print(f"Toogle Group 7 {at3.ToggleGroup(7)}")
+g = at3.groups[7]
+print(f"Group {g.name}: {g.is_on}; Mode is {g.mode}; {g.open_percent}%; Temp: {g.temperature}degC Target: {g.temperature_sp}degC")
+
+# Increase a group position
+print(f"Increase zone 0: {at3.TogglePositionGroup(0, AT3Command.INCREMENT)}")
+g = at3.groups[0]
+print(f"Group {g.name}: {g.is_on}; Mode is {g.mode}; {g.open_percent}%; Temp: {g.temperature}degC Target: {g.temperature_sp}degC")
+
+# Decrease a group position
+print(f"Decrease zone 6: {at3.groups[6].PositionDec()}")
+g = at3.groups[6]
+print(f"Group {g.name}: {g.is_on}; Mode is {g.mode}; {g.open_percent}%; Temp: {g.temperature}degC Target: {g.temperature_sp}degC")
+
+# Toogle AC Unit 1 on/off
+print(f"Toogle AC Unit 1 {at3.acUnits[1].Toggle()}")
+
+# Toogle AC Unit 1 Temp Setpoint Up
+print(f"Toogle AC Unit 1 {at3.acUnits[1].TemperatureInc()}")
+at3.PrintStatus()
+
+# Toogle AC Unit 0 Temp Setpoint Down
+print(f"Toogle AC Unit 0 {at3.ToggleTempAcUnit(0, AT3Command.DECREMENT)}")
+at3.PrintStatus()
+```
 # Warning
 This was code developed by testing with my Airtouch 3 system. I noted during development, if the unit received unexpected data, it would stop all communication (which includes to your mobile app) for a couple of minutes. There should be no issues with your Airtouch 3 system continuing to work with your mobile app while using this API, buts that your risk if you try it and you have problems.
 
