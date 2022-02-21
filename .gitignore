@@ -1,0 +1,3 @@
+src/airtouch3__pycache__/*
+build/*
+dist/*
