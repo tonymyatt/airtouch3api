@@ -257,7 +257,7 @@ class AirTouch3:
 
             # Group names are all fixed character length
             stt = AT3Const.DAOF_GRP_NAME + (z * AT3Const.GRP_NAME_LEN)
-            end = AT3Const.DAOF_GRP_NAME + AT3Const.GRP_NAME_LEN + (z * AT3Const.GRP_NAME_LEN)
+            end = stt + AT3Const.GRP_NAME_LEN
             name = response[stt:end].decode().strip().strip('\x00')
 
             # Groups are stored using their number as the index
@@ -302,7 +302,7 @@ class AirTouch3:
 
             # Names are straight after each other in the config file
             stt = AT3Const.DAOF_AC1_NAME + AT3Const.AC_NAME_LEN*a
-            end = AT3Const.DAOF_AC1_NAME + AT3Const.AC_NAME_LEN + AT3Const.AC_NAME_LEN*a
+            end = stt + AT3Const.AC_NAME_LEN
             name = response[stt:end].decode().strip().strip('\x00')
 
             # AC Units are stored using their number as the index
