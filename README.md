@@ -20,11 +20,11 @@ To read status from unit, return true if succesful, otherwise false:\
 `at3.acUnits`\
 `at3.sensors`\
 `at3.UpdateStatus()`\
-`at3.PrintStatus()`\
+`at3.PrintStatus()`
 
 ## Group Functions (aka Zones in most other systems)
 `at3.ToggleGroup(group_id)`\
-`at3.TogglePositionGroup(group_id, direction)`\
+`at3.TogglePositionGroup(group_id, direction)`
 ## Group Objects
 `at3.groups[group_id].number`\
 `at3.groups[group_id].name`\
@@ -39,7 +39,7 @@ To read status from unit, return true if succesful, otherwise false:\
 
 ## AC Unit Functions
 `at3.ToogleAcUnit(unit_id)`\
-`at3.ToggleTemperaturAcUnit(unit_id, direction)`\
+`at3.ToggleTemperaturAcUnit(unit_id, direction)`
 ## AC Unit Objects
 `at3.acUnits[unit_id].number`\
 `at3.acUnits[unit_id].is_on`\
