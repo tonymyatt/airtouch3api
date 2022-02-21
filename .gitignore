@@ -1,3 +1,4 @@
-src/airtouch3/__pycache__/*
+airtouch3/__pycache__/*
+airtouch3_tonymyatt.egg-info/*
 build/*
 dist/*

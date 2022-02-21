@@ -5,8 +5,8 @@ import hashlib
 from enum import Enum
 from xmlrpc.client import Boolean
 
-from constants import AT3Const
-from helper import AT3Helper
+from airtouch3.constants import AT3Const
+from airtouch3.helper import AT3Helper
 
 class AT3AcMode(Enum):
     AUTO = 0
@@ -258,7 +258,7 @@ class AirTouch3:
             # Group names are all fixed character length
             stt = AT3Const.DAOF_GRP_NAME + (z * AT3Const.GRP_NAME_LEN)
             end = AT3Const.DAOF_GRP_NAME + AT3Const.GRP_NAME_LEN + (z * AT3Const.GRP_NAME_LEN)
-            name = response[stt:end].decode().strip()
+            name = response[stt:end].decode().strip().strip('\x00')
 
             # Groups are stored using their number as the index
             # Try and get the group via its number, if non found, add it
@@ -303,7 +303,7 @@ class AirTouch3:
             # Names are straight after each other in the config file
             stt = AT3Const.DAOF_AC1_NAME + AT3Const.AC_NAME_LEN*a
             end = AT3Const.DAOF_AC1_NAME + AT3Const.AC_NAME_LEN + AT3Const.AC_NAME_LEN*a
-            name = str(response[stt:end].decode().strip())
+            name = response[stt:end].decode().strip().strip('\x00')
 
             # AC Units are stored using their number as the index
             # Try and get the group via its number, if non found, add it
@@ -368,8 +368,12 @@ class AirTouch3:
             self._Update_Or_Add_Sensor(f"Sensor {s+1}", byte_value)
 
         # Load the system name and id
-        self.name = response[AT3Const.DAOF_SYS_NAME:AT3Const.DAOF_SYS_NAME + AT3Const.SYS_NAME_LEN].decode().strip()
-        self.id = response[AT3Const.DAOF_SYS_ID:AT3Const.DAOF_SYS_ID+AT3Const.SYS_ID_LEN].decode().strip()
+        stt = AT3Const.DAOF_SYS_NAME
+        end = stt + AT3Const.SYS_NAME_LEN
+        self.name = response[stt:end].decode().strip().strip('\x00')
+        stt = AT3Const.DAOF_SYS_ID
+        end = stt + AT3Const.SYS_ID_LEN
+        self.id = response[stt:end].decode().strip().strip('\x00')
 
         # Successfully processed response
         return True
@@ -405,7 +409,6 @@ class AirTouch3:
         rChk = AT3Helper.calculate_checksum(rList)
         rList.extend(rChk)
         arr = bytes(rList)
-        print(str(rList))
 
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -416,6 +419,7 @@ class AirTouch3:
             data = s.recv(BUFFER_SIZE)
             s.close()
             self.comms_status = AT3CommsStatus.OK
+            self.comms_error = ""
             return data
         except OSError as e:
             self.comms_status = AT3CommsStatus.NOT_CONNECTED
