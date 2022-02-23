@@ -4,16 +4,16 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="airtouch3-tonymyatt",
-    version="0.2",
+    name="airtouch3",
+    version="0.3",
     author="Tony Myatt",
     author_email="tony@myatt.com.au",
     description="API for the monitoring and control of a HVAC unit branded Polyaire Airtouch 3 over a local network",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/tonymyatt/airtouch3pyapi",
+    url="https://github.com/tonymyatt/airtouch3api",
     project_urls={
-        "Bug Tracker": "https://github.com/tonymyatt/airtouch3pyapi/issues",
+        "Bug Tracker": "https://github.com/tonymyatt/airtouch3api/issues",
     },
     packages=setuptools.find_packages(),
     install_requires=[''],
