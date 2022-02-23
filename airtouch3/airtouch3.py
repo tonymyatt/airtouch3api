@@ -88,7 +88,7 @@ class AT3AcUnit:
         return self._at3classToggleSpFunc(self.number, AT3Command.INCREMENT)
     def TemperatureDec(self) -> bool: 
         return self._at3classToggleSpFunc(self.number, AT3Command.DECREMENT)
-        
+
 class AT3Group:
     name = "Unknown"
     number = -1
@@ -224,11 +224,19 @@ class AirTouch3:
         print(f"System Name: {self.name}")
         print(f"System ID: {self.id}")
         for g in self.groups.values():
-            print(f"Group[{g.number}]: {g.name}; On: {g.is_on}; Mode is {g.mode}; Percent: {g.open_percent}%; Temp: {g.temperature}degC; Target: {g.temperature_sp}degC")
+            print(f"Group[{g.number}]: {g.name}; On: {g.is_on}; "
+                  f"Mode is {g.mode}; Percent: {g.open_percent}%; "
+                  f"Temp: {g.temperature}degC; "
+                  f"Target: {g.temperature_sp}degC")
         for ac in self.acUnits.values():
-            print(f"AC Unit[{ac.number}]: {ac.name}; On: {ac.is_on}; Error: {ac.has_error}; Mode: {ac.mode}; Brand ID: {ac.brand}; Fan: {ac.fan_speed} Temp: {ac.temperature}degC Target: {ac.temperature_sp}degC")
+            print(f"AC Unit[{ac.number}]: {ac.name}; On: {ac.is_on}; "
+                  f"Error: {ac.has_error}; Mode: {ac.mode}; "
+                  f"Brand ID: {ac.brand}; Fan: {ac.fan_speed}; "
+                  f"Temp: {ac.temperature}degC; "
+                  f"Target: {ac.temperature_sp}degC")
         for s in self.sensors.values():
-            print(f"Sensor[{s.name}]: {s.temperature}degC; Low Battery: {s.low_battery}")
+            print(f"Sensor[{s.name}]: {s.temperature}degC; "
+                  f"Low Battery: {s.low_battery}")
 
     def _Process_Response(self, response) -> bool:
 
