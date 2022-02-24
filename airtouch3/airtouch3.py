@@ -16,13 +16,17 @@ class AT3AcMode(Enum):
     COOL = 4
 
     def __str__(self):
-        match self.value:
-            case AT3AcMode.AUTO.value:  return "Auto"
-            case AT3AcMode.HEAT.value:  return "Heat"
-            case AT3AcMode.DRY.value:   return "Dry"
-            case AT3AcMode.FAN.value:   return "Fan"
-            case AT3AcMode.COOL.value:  return "Cool"
-            case _:                     return "Unknown"
+        if self.value is AT3AcMode.AUTO:
+            return "Auto"
+        if self.value is AT3AcMode.HEAT:
+            return "Heat"
+        if self.value is AT3AcMode.DRY:
+            return "Dry"
+        if self.value is AT3AcMode.FAN:
+            return "Fan"
+        if self.value is AT3AcMode.COOL:
+            return "Cool"
+        return "Unknown"
 
 class AT3AcFanSpeed(Enum):
     QUIET = 0
@@ -33,14 +37,19 @@ class AT3AcFanSpeed(Enum):
     AUTO = 5
 
     def __str__(self):
-        match self.value:
-            case AT3AcFanSpeed.QUIET.value: return "Quiet"
-            case AT3AcFanSpeed.LOW.value:   return "Low"
-            case AT3AcFanSpeed.MED.value:   return "Medium"
-            case AT3AcFanSpeed.HIGH.value:  return "High"
-            case AT3AcFanSpeed.POWER.value: return "Powerful"
-            case AT3AcFanSpeed.AUTO.value:  return "Auto"
-            case _:                         return "Unknown"
+        if self.value is AT3AcFanSpeed.QUIET:
+            return "Quiet"
+        if self.value is AT3AcFanSpeed.LOW:
+            return "Low"
+        if self.value is AT3AcFanSpeed.MED:
+            return "Medium"
+        if self.value is AT3AcFanSpeed.HIGH:
+            return "High"
+        if self.value is AT3AcFanSpeed.POWER:
+            return "Powerful"
+        if self.value is AT3AcFanSpeed.AUTO:
+            return "Auto"
+        return "Unknown"
 
 class AT3GroupMode(Enum):
     TEMPERATURE = 0
@@ -48,11 +57,13 @@ class AT3GroupMode(Enum):
     INVALID = 2
 
     def __str__(self):
-        match self.value:
-            case AT3GroupMode.TEMPERATURE.value: return "Temperature Control"
-            case AT3GroupMode.PERECENT.value:    return "Percent Open"
-            case AT3GroupMode.INVALID.value:     return "Invalid"
-            case _:                              return "Unknown"
+        if self.value is AT3GroupMode.TEMPERATURE:
+            return "Temperature Control"
+        if self.value is AT3GroupMode.PERECENT:
+            return "Percent Open"
+        if self.value is AT3GroupMode.INVALID:
+            return "Invalid"
+        return "Unknown"
 
 class AT3CommsStatus(Enum):
     NOT_CONNECTED = 0
@@ -413,7 +424,8 @@ class AirTouch3:
         BUFFER_SIZE = 1024
 
         # Command is 12 bytes, add checksum as 13th
-        rList = [AT3Const.CMD_0, byte1, AT3Const.CMD_2, byte3, byte4, byte5, 0, 0, 0, 0, 0, 0]
+        rList = [AT3Const.CMD_0, byte1, AT3Const.CMD_2, 
+                    byte3, byte4, byte5, 0, 0, 0, 0, 0, 0]
         rChk = AT3Helper.calculate_checksum(rList)
         rList.extend(rChk)
         arr = bytes(rList)
