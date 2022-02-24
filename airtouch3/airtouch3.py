@@ -16,15 +16,15 @@ class AT3AcMode(Enum):
     COOL = 4
 
     def __str__(self):
-        if self.value is AT3AcMode.AUTO:
+        if self == AT3AcMode.AUTO:
             return "Auto"
-        if self.value is AT3AcMode.HEAT:
+        if self == AT3AcMode.HEAT:
             return "Heat"
-        if self.value is AT3AcMode.DRY:
+        if self == AT3AcMode.DRY:
             return "Dry"
-        if self.value is AT3AcMode.FAN:
+        if self == AT3AcMode.FAN:
             return "Fan"
-        if self.value is AT3AcMode.COOL:
+        if self == AT3AcMode.COOL:
             return "Cool"
         return "Unknown"
 
@@ -37,17 +37,17 @@ class AT3AcFanSpeed(Enum):
     AUTO = 5
 
     def __str__(self):
-        if self.value is AT3AcFanSpeed.QUIET:
+        if self == AT3AcFanSpeed.QUIET:
             return "Quiet"
-        if self.value is AT3AcFanSpeed.LOW:
+        if self == AT3AcFanSpeed.LOW:
             return "Low"
-        if self.value is AT3AcFanSpeed.MED:
+        if self == AT3AcFanSpeed.MED:
             return "Medium"
-        if self.value is AT3AcFanSpeed.HIGH:
+        if self == AT3AcFanSpeed.HIGH:
             return "High"
-        if self.value is AT3AcFanSpeed.POWER:
+        if self == AT3AcFanSpeed.POWER:
             return "Powerful"
-        if self.value is AT3AcFanSpeed.AUTO:
+        if self == AT3AcFanSpeed.AUTO:
             return "Auto"
         return "Unknown"
 
@@ -57,11 +57,11 @@ class AT3GroupMode(Enum):
     INVALID = 2
 
     def __str__(self):
-        if self.value is AT3GroupMode.TEMPERATURE:
+        if self == AT3GroupMode.TEMPERATURE:
             return "Temperature Control"
-        if self.value is AT3GroupMode.PERECENT:
+        if self == AT3GroupMode.PERECENT:
             return "Percent Open"
-        if self.value is AT3GroupMode.INVALID:
+        if self == AT3GroupMode.INVALID:
             return "Invalid"
         return "Unknown"
 
@@ -217,7 +217,7 @@ class AirTouch3:
 
             cmd = AT3Const.CMD_4_GRP_POSDEC 
             if direction == AT3Command.INCREMENT:
-                AT3Const.CMD_4_GRP_POSINC
+                cmd = AT3Const.CMD_4_GRP_POSINC
                 
             data = self._Send_Recieve(AT3Const.CMD_1_GRP_CTRL, group, cmd, 
                                         AT3Const.CMD_5_GRP_POS)
