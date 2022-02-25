@@ -84,21 +84,21 @@ class AT3AcUnit:
     brand = -1
     temperature = -1
     temperature_sp = -1
-    _at3classToggleFunc = None
-    _at3classToggleSpFunc = None
+    _at3class_toggle_func = None
+    _at3class_toggle_sp_func = None
 
-    def __init__(self, name, number, toggleFunc, toggleSpFunc):
+    def __init__(self, name, number, toggle_func, toggle_sp_func):
         self.name = name
         self.number = number
-        self._at3classToggleFunc = toggleFunc
-        self._at3classToggleSpFunc = toggleSpFunc
+        self._at3class_toggle_func = toggle_func
+        self._at3class_toggle_sp_func = toggle_sp_func
 
-    def Toggle(self) -> bool: 
-        return self._at3classToggleFunc(self.number)
-    def TemperatureInc(self) -> bool: 
-        return self._at3classToggleSpFunc(self.number, AT3Command.INCREMENT)
-    def TemperatureDec(self) -> bool: 
-        return self._at3classToggleSpFunc(self.number, AT3Command.DECREMENT)
+    def toggle(self) -> bool: 
+        return self._at3class_toggle_func(self.number)
+    def temperature_inc(self) -> bool: 
+        return self._at3class_toggle_sp_func(self.number, AT3Command.INCREMENT)
+    def temperature_dec(self) -> bool: 
+        return self._at3class_toggle_sp_func(self.number, AT3Command.DECREMENT)
 
 class AT3Group:
     name = "Unknown"
@@ -108,21 +108,21 @@ class AT3Group:
     open_percent = -1
     temperature = -1
     temperature_sp = -1
-    _at3classToggleFunc = None
-    _at3classTogglePosFunc = None
+    _at3class_toggle_func = None
+    _at3class_toggle_pos_func = None
 
-    def __init__(self, name, number, toggleFunc, togglePosFunc):
+    def __init__(self, name, number, toggle_func, toggle_pos_func):
         self.name = name
         self.number = number
-        self._at3classToggleFunc = toggleFunc
-        self._at3classTogglePosFunc = togglePosFunc
+        self._at3class_toggle_func = toggle_func
+        self._at3class_toggle_pos_func = toggle_pos_func
     
-    def Toggle(self) -> bool: 
-        return self._at3classToggleFunc(self.number)
-    def PositionInc(self) -> int: 
-        return self._at3classTogglePosFunc(self.number, AT3Command.INCREMENT)
-    def PositionDec(self) -> int: 
-        return self._at3classTogglePosFunc(self.number, AT3Command.DECREMENT)
+    def toggle(self) -> bool: 
+        return self._at3class_toggle_func(self.number)
+    def position_inc(self) -> int: 
+        return self._at3class_toggle_pos_func(self.number, AT3Command.INCREMENT)
+    def position_dec(self) -> int: 
+        return self._at3class_toggle_pos_func(self.number, AT3Command.DECREMENT)
 
 class AT3TempSensor:
     name = "Unknown"
@@ -134,15 +134,16 @@ class AT3TempSensor:
 
 class AirTouch3:
 
-    _tcp_ip = ""
-    _TCP_PORT = 8899    # Hardcoded as should never change
+    # Hardcoded as should never change
+    _TCP_PORT = 8899
 
+    _tcp_ip = ""
     name = ""
     id = ""
     comms_status = AT3CommsStatus.ERROR
     comms_error = "Uninitialised"
     groups: Dict[int, AT3Group] = dict()
-    acUnits: Dict[int, AT3AcUnit] = dict()
+    ac_units: Dict[int, AT3AcUnit] = dict()
     sensors: Dict[str, AT3TempSensor] = dict()
 
     def __init__(self, tcp_ip) -> None:
@@ -150,59 +151,59 @@ class AirTouch3:
         self.comms_status = AT3CommsStatus.NOT_CONNECTED
         self.comms_error = "Connection yet to be Attempted"
 
-    def UpdateStatus(self) -> bool:
+    def update_status(self) -> bool:
 
         # Send a command to the Air Touch 3
         # Byte1 = 1 means request status only
-        data = self._Send_Recieve(AT3Const.CMD_1_STATUS, 0, 0, 0)
+        data = self._send_recieve(AT3Const.CMD_1_STATUS, 0, 0, 0)
         
         # Process the response, returning valid processing of reponse
-        return self._Process_Response(data)
+        return self._process_response(data)
 
-    def ToogleAcUnit(self, acUnit) -> bool:
+    def toggle_ac_unit(self, acUnit) -> bool:
 
         # Send command to the Air Touch 3 if valid ac unit number
-        if acUnit >= 0 and acUnit < len(self.acUnits):
-            data = self._Send_Recieve(AT3Const.CMD_1_AC_CTRL, acUnit,
+        if acUnit >= 0 and acUnit < len(self.ac_units):
+            data = self._send_recieve(AT3Const.CMD_1_AC_CTRL, acUnit,
                                         AT3Const.CMD_4_TOGGLE, 0)
 
             # Process the response, if fails, return none to indicate error
-            if not self._Process_Response(data): return None
+            if not self._process_response(data): return None
 
             # return status of AC Unit
-            return self.acUnits[acUnit].is_on
+            return self.ac_units[acUnit].is_on
 
         # Invalid Ac Unit was given
         return None
 
-    def ToggleTemperaturAcUnit(self, acUnit, direction:AT3Command) -> bool:
+    def toggle_temperature_ac_unit(self, acUnit, direction:AT3Command) -> bool:
 
         # Send command to the Air Touch 3 if valid ac unit number
-        if acUnit >= 0 and acUnit < len(self.acUnits):
+        if acUnit >= 0 and acUnit < len(self.ac_units):
 
             cmd = AT3Const.CMD_4_AC_TEMP_DEC
             if direction == AT3Command.INCREMENT: 
                 cmd = AT3Const.CMD_4_AC_TEMP_INC
-            data = self._Send_Recieve(AT3Const.CMD_1_AC_CTRL, acUnit, cmd, 0)
+            data = self._send_recieve(AT3Const.CMD_1_AC_CTRL, acUnit, cmd, 0)
 
             # Process the response, if fails, return none to indicate error
-            if not self._Process_Response(data): return None
+            if not self._process_response(data): return None
 
             # return status of AC Unit
-            return self.acUnits[acUnit].temperature_sp
+            return self.ac_units[acUnit].temperature_sp
 
         # Invalid Ac Unit was given
         return None
 
-    def ToggleGroup(self, group) -> bool:
+    def toggle_group(self, group) -> bool:
 
         # Send command to the Air Touch 3 if valid group number
         if group >= 0 and group < len(self.groups):
-            data = self._Send_Recieve(AT3Const.CMD_1_GRP_CTRL, group, 
+            data = self._send_recieve(AT3Const.CMD_1_GRP_CTRL, group, 
                                         AT3Const.CMD_4_TOGGLE, 0)
 
             # Process the response, if fails, return none to indicate error
-            if not self._Process_Response(data): return None
+            if not self._process_response(data): return None
 
             # return status of group
             return self.groups[group].is_on
@@ -210,7 +211,7 @@ class AirTouch3:
         # Invalid group number was given
         return None
 
-    def TogglePositionGroup(self, group, direction:AT3Command) -> int:
+    def toggle_position_group(self, group, direction:AT3Command) -> int:
            
         # Send command to the Air Touch 3 if valid group number
         if group >= 0 and group < len(self.groups):
@@ -219,11 +220,11 @@ class AirTouch3:
             if direction == AT3Command.INCREMENT:
                 cmd = AT3Const.CMD_4_GRP_POSINC
                 
-            data = self._Send_Recieve(AT3Const.CMD_1_GRP_CTRL, group, cmd, 
+            data = self._send_recieve(AT3Const.CMD_1_GRP_CTRL, group, cmd, 
                                         AT3Const.CMD_5_GRP_POS)
 
             # Process the response, if fails, return none to indicate error
-            if not self._Process_Response(data): return None
+            if not self._process_response(data): return None
 
             # return status of group
             return self.groups[group].open_percent
@@ -231,7 +232,7 @@ class AirTouch3:
         # Invalid group number was given
         return None
     
-    def PrintStatus(self) -> None:
+    def print_status(self) -> None:
         print(f"System Name: {self.name}")
         print(f"System ID: {self.id}")
         for g in self.groups.values():
@@ -239,7 +240,7 @@ class AirTouch3:
                   f"Mode is {g.mode}; Percent: {g.open_percent}%; "
                   f"Temp: {g.temperature}degC; "
                   f"Target: {g.temperature_sp}degC")
-        for ac in self.acUnits.values():
+        for ac in self.ac_units.values():
             print(f"AC Unit[{ac.number}]: {ac.name}; On: {ac.is_on}; "
                   f"Error: {ac.has_error}; Mode: {ac.mode}; "
                   f"Brand ID: {ac.brand}; Fan: {ac.fan_speed}; "
@@ -249,13 +250,16 @@ class AirTouch3:
             print(f"Sensor[{s.name}]: {s.temperature}degC; "
                   f"Low Battery: {s.low_battery}")
 
-    def _Process_Response(self, response) -> bool:
+    def _process_response(self, response) -> bool:
+
+        for z in range(30):
+            print(str(int(response[AT3Const.DAOF_GRP_TEST+z]))+" "+bin(response[AT3Const.DAOF_GRP_TEST+z]))
 
         # No data received, must be a connection error, nothing to do
         # also make sure we recieved a response of length 492 bytes
         if not response or len(response) != AT3Const.RESPONSE_LEN:
-            comms_status = AT3CommsStatus.ERROR
-            comms_stauts = "Invalid Response Received"
+            self.comms_status = AT3CommsStatus.ERROR
+            self.comms_status = "Invalid Response Received"
             return False
 
         # Loop through the maximum number of zones
@@ -282,8 +286,8 @@ class AirTouch3:
             # Groups are stored using their number as the index
             # Try and get the group via its number, if non found, add it
             if not self.groups.get(z):
-                self.groups[z] = AT3Group(name, z, self.ToggleGroup, 
-                                            self.TogglePositionGroup)
+                self.groups[z] = AT3Group(name, z, self.toggle_group, 
+                                            self.toggle_position_group)
 
             # Get the group from he dict and set the name
             group = self.groups.get(z)
@@ -326,12 +330,12 @@ class AirTouch3:
 
             # AC Units are stored using their number as the index
             # Try and get the group via its number, if non found, add it
-            if not self.acUnits.get(a):
-                self.acUnits[a] = AT3AcUnit(name, a, self.ToogleAcUnit, 
-                                                self.ToggleTemperaturAcUnit)
+            if not self.ac_units.get(a):
+                self.ac_units[a] = AT3AcUnit(name, a, self.toggle_ac_unit, 
+                                                self.toggle_temperature_ac_unit)
 
             # Get the ac unit and set the name
-            acUnit = self.acUnits.get(a)
+            acUnit = self.ac_units.get(a)
             acUnit.name = name
             
             # Status contains on/off and error bits
@@ -373,7 +377,7 @@ class AirTouch3:
 
         # Save sensor into the sensor list, returns the sensor object
         byte_value = response[AT3Const.DAOF_TP_TEMP]
-        sensor = self._Update_Or_Add_Sensor(name, byte_value)
+        sensor = self._update_or_add_sensor(name, byte_value)
 
         # If valid group and sensor available (should always be available 
         # because its a TP), set temperature of group
@@ -384,7 +388,7 @@ class AirTouch3:
         # Get the sensors in the system
         for s in range(AT3Const.TEMP_SENSOR_LEN):
             byte_value = response[AT3Const.DAOF_TEMP_SENSORS+s]
-            self._Update_Or_Add_Sensor(f"Sensor {s+1}", byte_value)
+            self._update_or_add_sensor(f"Sensor {s+1}", byte_value)
 
         # Load the system name and id
         stt = AT3Const.DAOF_SYS_NAME
@@ -397,7 +401,7 @@ class AirTouch3:
         # Successfully processed response
         return True
 
-    def _Update_Or_Add_Sensor(self, name, byte_value):
+    def _update_or_add_sensor(self, name, byte_value):
 
         temperature = byte_value & 0b0011_1111               # Bits 0 to 6
         available = AT3Helper.bit8_in_byte_on(byte_value)    # Bit 8
@@ -418,7 +422,7 @@ class AirTouch3:
         sensor.low_battery = low_battery
         return sensor
 
-    def _Send_Recieve(self, byte1, byte3, byte4, byte5) -> bytes:
+    def _send_recieve(self, byte1, byte3, byte4, byte5) -> bytes:
 
         # Should always be much less than this (ref AT3Const.RESPONSE_LEN)
         BUFFER_SIZE = 1024
