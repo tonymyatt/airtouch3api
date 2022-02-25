@@ -252,9 +252,6 @@ class AirTouch3:
 
     def _process_response(self, response) -> bool:
 
-        for z in range(30):
-            print(str(int(response[AT3Const.DAOF_GRP_TEST+z]))+" "+bin(response[AT3Const.DAOF_GRP_TEST+z]))
-
         # No data received, must be a connection error, nothing to do
         # also make sure we recieved a response of length 492 bytes
         if not response or len(response) != AT3Const.RESPONSE_LEN:
