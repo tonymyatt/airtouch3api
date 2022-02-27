@@ -51,6 +51,7 @@ class AT3Const:
     CMD_4_TOGGLE = 128          # Toggle on/off in byte 4
     CMD_4_GRP_POSDEC = 1        # Position decrement (5% down) in byte 4
     CMD_4_GRP_POSINC = 2        # Position increment (5% up) in byte 4
+    CMD_4_AC_FAN_SPD = 130       # AC Fan speed in byte 4
     CMD_4_AC_TEMP_DEC = 147     # AC Temperature setpoint decrement in byte 4
     CMD_4_AC_TEMP_INC = 163     # AC Temperature setpoint increment in byte 4
     CMD_5_GRP_POS = 1           # In Position dec/inc command, byte 5 is fixed

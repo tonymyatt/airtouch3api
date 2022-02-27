@@ -224,7 +224,7 @@ class AirTouch3ASync:
         self._tcp_ip = tcp_ip
         self.comms_status = AT3CommsStatus.NOT_CONNECTED
         self.comms_error = "Connection yet to be Attempted"
-        self.recv_task = self._socket_go()
+        self.recv_task = self._socket_connect()
 
     def update_status(self):
 
@@ -313,7 +313,7 @@ class AirTouch3ASync:
         sensor.low_battery = low_battery
         return sensor
 
-    def _socket_go(self):
+    def _socket_connect(self):
         try:
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             #self._socket.settimeout(5.0)
@@ -332,158 +332,158 @@ class AirTouch3ASync:
         BUFFER_SIZE = 492
 
         while True:
-            print("Waiting!")
             response = self._socket.recv(BUFFER_SIZE)
-            print("Got Data! Bytes: "+str(len(response)))
+            self._process_response(response)
 
-            # No data received, must be a connection error, nothing to do
-            # also make sure we recieved a response of length 492 bytes
-            if not response or len(response) != AT3Const.RESPONSE_LEN:
-                self.comms_status = AT3CommsStatus.ERROR
-                self.comms_status = "Invalid Response Received"
-                print("ERROR! "+str(len(response))+" "+self.comms_status)
-                return False
-
-            # Loop through the maximum number of zones
-            # these are the dampers themselves, which are "grouped" 
-            # into what is usually known as zones
-            zones = []
-            for z in range(AT3Const.ZONES_LEN):
-                # MSB is zone on/off (x) and LS three bits are zone 
-                # number 0-7 (y) x000_0yyy. Note the zone number for 
-                # zones 1-8 is 0-7 and repeats for zones 9-16, ie 0-7
-                byte_value = response[AT3Const.DAOF_ZONE_STATE+z]
-                zones.append(AT3Helper.bit8_in_byte_on(byte_value))
-
-            # Loop through all the groups, only load the number 
-            # configured in the system
-            num_groups = int(response[AT3Const.DAOF_GRP_COUNT])
-            for z in range(min(AT3Const.GROUPS_LEN, num_groups)):
-
-                # Group names are all fixed character length
-                stt = AT3Const.DAOF_GRP_NAME + (z * AT3Const.GRP_NAME_LEN)
-                end = stt + AT3Const.GRP_NAME_LEN
-                name = response[stt:end].decode().strip().strip('\x00')
-
-                # Groups are stored using their number as the index
-                # Try and get the group via its number, if non found, add it
-                if not self.groups.get(z):
-                    self.groups[z] = AT3Group(name, z, self.toggle_group, 
-                                                self.toggle_position_group)
-
-                # Get the group from he dict and set the name
-                group = self.groups.get(z)
-                group.name = name
-
-                # Get the first zone in the group and base the status 
-                # of the group on that zone. All zones in a group will have
-                # the same status, so only need to read the first
-                byte_value = response[AT3Const.DAOF_GRP_FIRSTZONE+z]
-                first_zone = int((byte_value & 0b1111_0000) >> 4)
-                group.is_on = zones[first_zone]    
-
-                # Mode of zone is 7th bit, if on then temp control, 
-                # else percent position
-                byte_value = response[AT3Const.DAOF_GRP_PERCENT+z]
-                group.mode = AT3GroupMode.PERECENT
-                if AT3Helper.bit8_in_byte_on(byte_value):
-                    group.mode = AT3GroupMode.TEMPERATURE
-
-                # Temperature setpoint is bottom 5 bits 
-                # (less one from setpoint, kinda wierd?!)
-                byte_value = response[AT3Const.DAOF_GRP_SETPOINT+z]
-                group.temperature_sp = int(byte_value & 0b0001_1111) + 1
-
-                # Group percent is bottom 7 bits and 1 count per 5%
-                byte_value = response[AT3Const.DAOF_GRP_PERCENT+z]
-                percent = 5*int(byte_value & 0b0111_1111)
-                group.open_percent = percent if group.is_on else 0
-
-            # Update AC Units from the response
-            # TODO At the moment, get data for two air cons, need to work  out 
-            # how many air cons are being used and what groups are allocated 
-            # to each air con
-            for a in range(AT3Const.AC_UNIT_LEN):
-
-                # Names are straight after each other in the config file
-                stt = AT3Const.DAOF_AC1_NAME + AT3Const.AC_NAME_LEN*a
-                end = stt + AT3Const.AC_NAME_LEN
-                name = response[stt:end].decode().strip().strip('\x00')
-
-                # AC Units are stored using their number as the index
-                # Try and get the group via its number, if non found, add it
-                if not self.ac_units.get(a):
-                    self.ac_units[a] = AT3AcUnit(name, a, self.toggle_ac_unit, 
-                                                    self.toggle_temperature_ac_unit)
-
-                # Get the ac unit and set the name
-                acUnit = self.ac_units.get(a)
-                acUnit.name = name
-                
-                # Status contains on/off and error bits
-                status = response[AT3Const.DAOF_AC1_STATUS+a]
-                acUnit.is_on = AT3Helper.bit8_in_byte_on(status)
-                acUnit.has_error = AT3Helper.bit7_in_byte_on(status)
-
-                # Get the brand id, we need this to issue commands to the AcUnit, 
-                # otherwise, who cares right?
-                acUnit.brand = int(response[AT3Const.DAOF_AC1_BRAND+a])
-
-                # Mode at in heat/cool etc
-                acUnit.mode = AT3AcMode(int(response[AT3Const.DAOF_AC1_MODE+a]))
-                
-                # Fan Speed is only bottom 4 bits
-                byte_value = response[AT3Const.DAOF_AC1_FAN+a]
-                acUnit.fan_speed = AT3AcFanSpeed(int(byte_value & 0b0000_1111))
-
-                # Get the temp control mode, but dont do anything with it
-                # TODO Not used at the moment, dont know how air touch 3 
-                # re-assigns the temperature feedback based on this mode
-                #data[DAOF_AC1_THERM_MODE+a]
-                
-                # This is the temperature from the AC unit itself, depending 
-                # on setup, a zone temp might be being used as the AC temp 
-                # feedback TODO, need to reassign the temperature based on the 
-                # therm mode above
-                acUnit.temperature = int(response[AT3Const.DAOF_AC1_TEMP_PV+a])
-
-                # Temperature setpoint; ignore top two bits as usual, for 
-                # temp values
-                byte_value = response[AT3Const.DAOF_AC1_TEMP_SP+a]
-                acUnit.temperature_sp = int(byte_value & 0b0011_1111)
-
-            # Touch pad information, add to sensor list
-            # The Group the touch pad temperature is assigned to
-            group_id = int(response[AT3Const.DAOF_TP_GRP_ID])
-            name = "Touch Pad 1"
-
-            # Save sensor into the sensor list, returns the sensor object
-            byte_value = response[AT3Const.DAOF_TP_TEMP]
-            sensor = self._update_or_add_sensor(name, byte_value)
-
-            # If valid group and sensor available (should always be available 
-            # because its a TP), set temperature of group
-            # assign the temperature to the appropriate group
-            if group_id > 0 and group_id <= num_groups and sensor:
-                self.groups[group_id - 1].temperature = sensor.temperature  
-
-            # Get the sensors in the system
-            for s in range(AT3Const.TEMP_SENSOR_LEN):
-                byte_value = response[AT3Const.DAOF_TEMP_SENSORS+s]
-                self._update_or_add_sensor(f"Sensor {s+1}", byte_value)
-
-            # Load the system name and id
-            stt = AT3Const.DAOF_SYS_NAME
-            end = stt + AT3Const.SYS_NAME_LEN
-            self.name = response[stt:end].decode().strip().strip('\x00')
-            stt = AT3Const.DAOF_SYS_ID
-            end = stt + AT3Const.SYS_ID_LEN
-            self.id = response[stt:end].decode().strip().strip('\x00')
-
+            # Notify all callbacks or new status
             for func in self._update_callbacks:
                 func()
-            #self.print_status()
         
+    def _process_reponse(self, response):
+        
+        # also make sure we recieved a response of length 492 bytes
+        if not response or len(response) != AT3Const.RESPONSE_LEN:
+            self.comms_status = AT3CommsStatus.ERROR
+            self.comms_status = "Invalid Response Received"
+            print("ERROR! "+str(len(response))+" "+self.comms_status)
+            return False
+
+        # Loop through the maximum number of zones
+        # these are the dampers themselves, which are "grouped" 
+        # into what is usually known as zones
+        zones = []
+        for z in range(AT3Const.ZONES_LEN):
+            # MSB is zone on/off (x) and LS three bits are zone 
+            # number 0-7 (y) x000_0yyy. Note the zone number for 
+            # zones 1-8 is 0-7 and repeats for zones 9-16, ie 0-7
+            byte_value = response[AT3Const.DAOF_ZONE_STATE+z]
+            zones.append(AT3Helper.bit8_in_byte_on(byte_value))
+
+        # Loop through all the groups, only load the number 
+        # configured in the system
+        num_groups = int(response[AT3Const.DAOF_GRP_COUNT])
+        for z in range(min(AT3Const.GROUPS_LEN, num_groups)):
+
+            # Group names are all fixed character length
+            stt = AT3Const.DAOF_GRP_NAME + (z * AT3Const.GRP_NAME_LEN)
+            end = stt + AT3Const.GRP_NAME_LEN
+            name = response[stt:end].decode().strip().strip('\x00')
+
+            # Groups are stored using their number as the index
+            # Try and get the group via its number, if non found, add it
+            if not self.groups.get(z):
+                self.groups[z] = AT3Group(name, z, self.toggle_group, 
+                                            self.toggle_position_group)
+
+            # Get the group from he dict and set the name
+            group = self.groups.get(z)
+            group.name = name
+
+            # Get the first zone in the group and base the status 
+            # of the group on that zone. All zones in a group will have
+            # the same status, so only need to read the first
+            byte_value = response[AT3Const.DAOF_GRP_FIRSTZONE+z]
+            first_zone = int((byte_value & 0b1111_0000) >> 4)
+            group.is_on = zones[first_zone]    
+
+            # Mode of zone is 7th bit, if on then temp control, 
+            # else percent position
+            byte_value = response[AT3Const.DAOF_GRP_PERCENT+z]
+            group.mode = AT3GroupMode.PERECENT
+            if AT3Helper.bit8_in_byte_on(byte_value):
+                group.mode = AT3GroupMode.TEMPERATURE
+
+            # Temperature setpoint is bottom 5 bits 
+            # (less one from setpoint, kinda wierd?!)
+            byte_value = response[AT3Const.DAOF_GRP_SETPOINT+z]
+            group.temperature_sp = int(byte_value & 0b0001_1111) + 1
+
+            # Group percent is bottom 7 bits and 1 count per 5%
+            byte_value = response[AT3Const.DAOF_GRP_PERCENT+z]
+            percent = 5*int(byte_value & 0b0111_1111)
+            group.open_percent = percent if group.is_on else 0
+
+        # Update AC Units from the response
+        # TODO At the moment, get data for two air cons, need to work  out 
+        # how many air cons are being used and what groups are allocated 
+        # to each air con
+        for a in range(AT3Const.AC_UNIT_LEN):
+
+            # Names are straight after each other in the config file
+            stt = AT3Const.DAOF_AC1_NAME + AT3Const.AC_NAME_LEN*a
+            end = stt + AT3Const.AC_NAME_LEN
+            name = response[stt:end].decode().strip().strip('\x00')
+
+            # AC Units are stored using their number as the index
+            # Try and get the group via its number, if non found, add it
+            if not self.ac_units.get(a):
+                self.ac_units[a] = AT3AcUnit(name, a, self.toggle_ac_unit, 
+                                                self.toggle_temperature_ac_unit)
+
+            # Get the ac unit and set the name
+            acUnit = self.ac_units.get(a)
+            acUnit.name = name
+            
+            # Status contains on/off and error bits
+            status = response[AT3Const.DAOF_AC1_STATUS+a]
+            acUnit.is_on = AT3Helper.bit8_in_byte_on(status)
+            acUnit.has_error = AT3Helper.bit7_in_byte_on(status)
+
+            # Get the brand id, we need this to issue commands to the AcUnit, 
+            # otherwise, who cares right?
+            acUnit.brand = int(response[AT3Const.DAOF_AC1_BRAND+a])
+
+            # Mode at in heat/cool etc
+            acUnit.mode = AT3AcMode(int(response[AT3Const.DAOF_AC1_MODE+a]))
+            
+            # Fan Speed is only bottom 4 bits
+            byte_value = response[AT3Const.DAOF_AC1_FAN+a]
+            acUnit.fan_speed = AT3AcFanSpeed(int(byte_value & 0b0000_1111))
+
+            # Get the temp control mode, but dont do anything with it
+            # TODO Not used at the moment, dont know how air touch 3 
+            # re-assigns the temperature feedback based on this mode
+            #data[DAOF_AC1_THERM_MODE+a]
+            
+            # This is the temperature from the AC unit itself, depending 
+            # on setup, a zone temp might be being used as the AC temp 
+            # feedback TODO, need to reassign the temperature based on the 
+            # therm mode above
+            acUnit.temperature = int(response[AT3Const.DAOF_AC1_TEMP_PV+a])
+
+            # Temperature setpoint; ignore top two bits as usual, for 
+            # temp values
+            byte_value = response[AT3Const.DAOF_AC1_TEMP_SP+a]
+            acUnit.temperature_sp = int(byte_value & 0b0011_1111)
+
+        # Touch pad information, add to sensor list
+        # The Group the touch pad temperature is assigned to
+        group_id = int(response[AT3Const.DAOF_TP_GRP_ID])
+        name = "Touch Pad 1"
+
+        # Save sensor into the sensor list, returns the sensor object
+        byte_value = response[AT3Const.DAOF_TP_TEMP]
+        sensor = self._update_or_add_sensor(name, byte_value)
+
+        # If valid group and sensor available (should always be available 
+        # because its a TP), set temperature of group
+        # assign the temperature to the appropriate group
+        if group_id > 0 and group_id <= num_groups and sensor:
+            self.groups[group_id - 1].temperature = sensor.temperature  
+
+        # Get the sensors in the system
+        for s in range(AT3Const.TEMP_SENSOR_LEN):
+            byte_value = response[AT3Const.DAOF_TEMP_SENSORS+s]
+            self._update_or_add_sensor(f"Sensor {s+1}", byte_value)
+
+        # Load the system name and id
+        stt = AT3Const.DAOF_SYS_NAME
+        end = stt + AT3Const.SYS_NAME_LEN
+        self.name = response[stt:end].decode().strip().strip('\x00')
+        stt = AT3Const.DAOF_SYS_ID
+        end = stt + AT3Const.SYS_ID_LEN
+        self.id = response[stt:end].decode().strip().strip('\x00')
+
     def _send(self, byte1, byte3, byte4, byte5):
 
         if not self.comms_status == AT3CommsStatus.OK:
@@ -507,7 +507,8 @@ async def main():
     at3.register_update_callback(print_ac_on_off)
     at3.update_status()
 
-    if at3.recv_task:
-        await at3.recv_task
+    await asyncio.sleep(100)
+    #if at3.recv_task:
+    #    await at3.recv_task
 
 asyncio.run(main())

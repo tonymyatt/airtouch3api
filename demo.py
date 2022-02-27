@@ -1,6 +1,7 @@
 from airtouch3 import AirTouch3
 from airtouch3 import AT3CommsStatus
 from airtouch3 import AT3Command
+from airtouch3.airtouch3 import AT3AcFanSpeed
 
 at3 = AirTouch3('192.168.1.72')
 at3.update_status()
@@ -9,6 +10,9 @@ if at3.comms_status != AT3CommsStatus.OK:
     print("Connection failed "+at3.comms_error)
     exit()
 at3.print_status()
+
+print(f"Fan Speed for AC0 {at3.set_fan_speed_ac_unit(1, AT3AcFanSpeed.HIGH)}")
+exit()
 
 # Toggle a zone on/off
 #print(f"Toogle Group 7 {at3.groups[7].toggle()}")

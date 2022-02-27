@@ -149,6 +149,7 @@ var AirTouchMessage = /** @class */ (function () {
         this.buffer[4] = -127;
         this.buffer[5] = mode;
         this.buffer[12] = this.calcChecksum();
+        ts.printHexCode("AC Mode");
     };
     AirTouchMessage.prototype.setFanSpeed = function (acId, brandId, inMode) {
         this.resetMessage();
@@ -179,6 +180,7 @@ var AirTouchMessage = /** @class */ (function () {
         this.buffer[4] = -126;
         this.buffer[5] = mode;
         this.buffer[12] = this.calcChecksum();
+        ts.printHexCode("AC Fan Speed");
     };
     AirTouchMessage.prototype.SetNewTemperature = function (acId, incDec) {
         this.resetMessage();
@@ -202,6 +204,10 @@ var AirTouchMessage = /** @class */ (function () {
 }());
 exports.AirTouchMessage = AirTouchMessage;
 var ts = new AirTouchMessage();
+ts.setFanSpeed(0, 8, 1);
+ts.setFanSpeed(1, 8, 1);
+ts.setMode(1, 8, 1);
+ts.setMode(1, 8, 2);
 ts.getInitMsg();
 ts.printHexCode("Init Message:");
 ts.toggleZone(0);

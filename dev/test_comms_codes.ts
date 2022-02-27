@@ -178,6 +178,7 @@
               this.buffer[4] = -127;
               this.buffer[5] = mode;
               this.buffer[12] = this.calcChecksum();
+              ts.printHexCode("AC Mode")
       }
   
   
@@ -217,6 +218,7 @@
         this.buffer[4] = -126;
         this.buffer[5] = mode;
         this.buffer[12] = this.calcChecksum();
+        ts.printHexCode("AC Fan Speed")
       }
 
       SetNewTemperature(acId: number, incDec: number)
@@ -243,6 +245,12 @@
   }
 
 let ts = new AirTouchMessage();
+
+ts.setFanSpeed(0, 8, 1)
+ts.setFanSpeed(1, 8, 1)
+
+ts.setMode(1, 8, 1)
+ts.setMode(1, 8, 2)
 
 ts.getInitMsg()
 ts.printHexCode("Init Message:")

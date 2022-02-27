@@ -178,22 +178,35 @@ class AirTouch3:
 
     def toggle_temperature_ac_unit(self, acUnit, direction:AT3Command) -> bool:
 
-        # Send command to the Air Touch 3 if valid ac unit number
-        if acUnit >= 0 and acUnit < len(self.ac_units):
+        # Invalid Ac Unit was given
+        if acUnit < 0 or acUnit >= len(self.ac_units):
+            return None
 
-            cmd = AT3Const.CMD_4_AC_TEMP_DEC
-            if direction == AT3Command.INCREMENT: 
-                cmd = AT3Const.CMD_4_AC_TEMP_INC
-            data = self._send_recieve(AT3Const.CMD_1_AC_CTRL, acUnit, cmd, 0)
+        cmd = AT3Const.CMD_4_AC_TEMP_DEC
+        if direction == AT3Command.INCREMENT: 
+            cmd = AT3Const.CMD_4_AC_TEMP_INC
+        data = self._send_recieve(AT3Const.CMD_1_AC_CTRL, acUnit, cmd, 0)
 
-            # Process the response, if fails, return none to indicate error
-            if not self._process_response(data): return None
+        # Process the response, if fails, return none to indicate error
+        if not self._process_response(data): return None
 
-            # return status of AC Unit
-            return self.ac_units[acUnit].temperature_sp
+        # return status of AC Unit
+        return self.ac_units[acUnit].temperature_sp  
+
+    def set_fan_speed_ac_unit(self, acUnit, speed:AT3AcFanSpeed) -> bool:
 
         # Invalid Ac Unit was given
-        return None
+        if acUnit < 0 or acUnit >= len(self.ac_units):
+            return None
+
+        data = self._send_recieve(AT3Const.CMD_1_AC_CTRL, acUnit, 
+                                    AT3Const.CMD_4_AC_FAN_SPD, speed.value)
+
+        # Process the response, if fails, return none to indicate error
+        if not self._process_response(data): return None
+
+        # return status of AC Unit
+        return self.ac_units[acUnit].fan_speed
 
     def toggle_group(self, group) -> bool:
 
@@ -430,6 +443,7 @@ class AirTouch3:
         rChk = AT3Helper.calculate_checksum(rList)
         rList.extend(rChk)
         arr = bytes(rList)
+        print(*rList, sep = ", ")
 
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
