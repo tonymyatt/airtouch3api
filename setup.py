@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="airtouch3",
-    version="0.6",
+    version="0.7",
     author="Tony Myatt",
     author_email="tony@myatt.com.au",
     description="API for the monitoring and control of a HVAC unit branded Polyaire Airtouch 3 over a local network",

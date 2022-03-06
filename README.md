@@ -39,7 +39,9 @@ To read status from unit, return true if succesful, otherwise false:\
 
 ## AC Unit Functions
 `at3.toogle_ac_unit(unit_id)`\
-`at3.toggle_temperature_ac_unit(unit_id, direction)`
+`at3.toggle_temperature_ac_unit(unit_id, direction:AT3Command)`
+`at3.set_fan_speed_ac_unit(unit_id, speed:AT3AcFanSpeed)`
+`at3.set_mode_ac_unit(unit_id, mode:AT3AcMode)`
 ## AC Unit Objects
 `at3.acUnits[unit_id].number`\
 `at3.acUnits[unit_id].is_on`\
@@ -51,7 +53,9 @@ To read status from unit, return true if succesful, otherwise false:\
 `at3.acUnits[unit_id].temperature_sp`\
 `at3.acUnits[unit_id].toggle()`\
 `at3.acUnits[unit_id].temperature_inc()`\
-`at3.acUnits[unit_id].temperature_dec()`
+`at3.acUnits[unit_id].temperature_dec()`\
+`at3.acUnits[unit_id].set_fan_speed(speed:AT3AcFanSpeed)`\
+`at3.acUnits[unit_id].set_mode(mode:AT3AcMode)`
 
 ## AC Sensor Objects
 `at3.sensors[sensor_name].name`\
