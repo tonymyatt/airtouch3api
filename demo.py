@@ -11,7 +11,8 @@ if at3.comms_status != AT3CommsStatus.OK:
     exit()
 at3.print_status()
 
-print(f"Mode for AC0 {at3.ac_units[0].set_mode(AT3AcMode.DRY)}")
+print(f"Mode for AC1 {at3.ac_units[1].set_mode(AT3AcMode.DRY)}")
+#print(f"Toggle AC1 {at3.ac_units[1].toggle()}")
 exit()
 
 print(f"Fan Speed for AC0 {at3.ac_units[1].set_fan_speed(AT3AcFanSpeed.HIGH)}")

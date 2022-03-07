@@ -218,7 +218,7 @@ class AirTouch3:
 
         data = self._send_recieve(const.CMD_1_AC_CTRL, acUnit, 
                                     const.CMD_4_AC_MODE, mode.value)
-
+        
         # Process the response, if fails, return none to indicate error
         if not self._process_response(data): return None
 
@@ -373,8 +373,9 @@ class AirTouch3:
             # otherwise, who cares right?
             acUnit.brand = int(response[const.DAOF_AC1_BRAND+a])
 
-            # Mode at in heat/cool etc
-            acUnit.mode = AT3AcMode(int(response[const.DAOF_AC1_MODE+a]))
+            # Mode at in heat/cool etc in bottom 4 bits
+            byte_value = response[const.DAOF_AC1_MODE+a]
+            acUnit.mode = AT3AcMode(int(byte_value & 0b0000_1111))
             
             # Fan Speed is only bottom 4 bits
             byte_value = response[const.DAOF_AC1_FAN+a]
@@ -459,7 +460,6 @@ class AirTouch3:
         rChk = calculate_checksum(rList)
         rList.extend(rChk)
         arr = bytes(rList)
-        print(*rList, sep = ", ")
 
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
