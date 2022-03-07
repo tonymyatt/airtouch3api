@@ -1,9 +1,6 @@
-import socket
-from typing import List
-from typing import Dict
-import hashlib
 from enum import Enum
-from xmlrpc.client import Boolean
+import socket
+from typing import Dict
 
 import airtouch3.constants as const
 from airtouch3.helper import (
@@ -140,10 +137,11 @@ class AirTouch3:
     _TCP_PORT = 8899
 
     _tcp_ip = ""
-    name = ""
-    id = ""
+
     comms_status = AT3CommsStatus.ERROR
     comms_error = "Uninitialised"
+    name = ""
+    id = ""
     groups: Dict[int, AT3Group] = dict()
     ac_units: Dict[int, AT3AcUnit] = dict()
     sensors: Dict[str, AT3TempSensor] = dict()
@@ -155,8 +153,7 @@ class AirTouch3:
 
     def update_status(self) -> bool:
 
-        # Send a command to the Air Touch 3
-        # Byte1 = 1 means request status only
+        # Send a command to the Air Touch 3 to read status
         data = self._send_recieve(const.CMD_1_STATUS, 0, 0, 0)
         
         # Process the response, returning valid processing of reponse
