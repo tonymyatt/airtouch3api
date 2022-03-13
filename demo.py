@@ -11,10 +11,12 @@ if at3.comms_status != AT3CommsStatus.OK:
     exit()
 at3.print_status()
 
-print(f"Mode for AC1 {at3.ac_units[1].set_mode(AT3AcMode.COOL)}")
-#print(f"Toggle AC1 {at3.ac_units[1].toggle()}")
-exit()
+gid = 4
+print(f"Toggle temp control for group-{gid} {at3.groups[gid].name} {at3.toggle_group_mode(gid)}")
+gid = 2
+print(f"Toggle temp control for group-{gid} {at3.groups[gid].name} {at3.groups[gid].toggle_mode()}")
 
+print(f"Mode for AC1 {at3.ac_units[1].set_mode(AT3AcMode.COOL)}")
 print(f"Fan Speed for AC0 {at3.ac_units[1].set_fan_speed(AT3AcFanSpeed.HIGH)}")
 
 # Toggle a zone on/off
