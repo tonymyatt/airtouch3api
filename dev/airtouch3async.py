@@ -502,12 +502,14 @@ def print_ac_on_off():
     print("Data has changed!")
 
 async def main():
+    await asyncio.sleep(100)
     at3 = AirTouch3ASync('192.168.1.72')
+    print("Registering callbacks")
     at3.register_update_callback(at3.print_status)
     at3.register_update_callback(print_ac_on_off)
+    print("Updating Status")
     at3.update_status()
 
-    await asyncio.sleep(100)
     #if at3.recv_task:
     #    await at3.recv_task
 
